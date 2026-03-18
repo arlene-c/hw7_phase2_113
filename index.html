@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fireboy & Watergirl – Temple of Elements</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🔥</text></svg>">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui-overlay">
+      <div id="title-screen">
+        <div class="title-glow"></div>
+        <h1 class="game-title">
+          <span class="fire-text">FIRE</span><span class="boy-text">BOY</span>
+          <span class="amp">&</span>
+          <span class="water-text">WATER</span><span class="girl-text">GIRL</span>
+        </h1>
+        <p class="subtitle">Temple of Elements</p>
+        <div class="controls-info">
+          <div class="control-group fire-controls">
+            <h3>🔥 Fireboy</h3>
+            <div class="keys">
+              <kbd>W</kbd> Jump
+              <kbd>A</kbd><kbd>D</kbd> Move
+            </div>
+          </div>
+          <div class="control-group water-controls">
+            <h3>💧 Watergirl</h3>
+            <div class="keys">
+              <kbd>↑</kbd> Jump
+              <kbd>←</kbd><kbd>→</kbd> Move
+            </div>
+          </div>
+        </div>
+        <button id="startBtn" class="pulse-btn">START GAME</button>
+        <button id="levelSelectBtn" class="secondary-btn">LEVEL SELECT</button>
+      </div>
+      <div id="level-select" class="hidden">
+        <h2>Select Level</h2>
+        <div id="level-grid"></div>
+        <button id="backBtn" class="secondary-btn">BACK</button>
+      </div>
+      <div id="hud" class="hidden">
+        <div class="hud-left">
+          <span class="hud-label fire-label">🔥</span>
+          <span id="fire-gems">0</span>
+        </div>
+        <div class="hud-center">
+          <span id="level-name">Level 1</span>
+          <span id="timer">0:00</span>
+        </div>
+        <div class="hud-right">
+          <span class="hud-label water-label">💧</span>
+          <span id="water-gems">0</span>
+        </div>
+      </div>
+      <div id="win-screen" class="hidden">
+        <h2 class="win-title">LEVEL COMPLETE!</h2>
+        <div class="win-stats">
+          <p>Time: <span id="win-time"></span></p>
+          <p>Fire Gems: <span id="win-fire"></span></p>
+          <p>Water Gems: <span id="win-water"></span></p>
+        </div>
+        <button id="nextLevelBtn" class="pulse-btn">NEXT LEVEL</button>
+        <button id="menuBtn" class="secondary-btn">MENU</button>
+      </div>
+      <div id="death-screen" class="hidden">
+        <h2 class="death-title">OH NO!</h2>
+        <p class="death-msg" id="death-msg">A player touched the wrong element!</p>
+        <button id="retryBtn" class="pulse-btn">RETRY</button>
+      </div>
+    </div>
+  </div>
+  <script src="engine.js"></script>
+  <script src="levels.js"></script>
+  <script src="renderer.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
