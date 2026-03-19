@@ -1,4 +1,4 @@
-# 🔥 Fireboy & Watergirl – Temple of Elements 💧
+# Fireboy & Watergirl – Temple of Elements
 
 A cooperative two-player platformer inspired by the classic Fireboy and Watergirl series, built with vanilla HTML5 Canvas — no dependencies, no build step.
 
@@ -17,12 +17,14 @@ A cooperative two-player platformer inspired by the classic Fireboy and Watergir
 - **Watergirl** can walk through water but **dies in lava**
 - **Green poison** kills **both** players
 - Collect gems matching your element (fire gems for Fireboy, water gems for Watergirl)
+- All gems of each type must be collecgtged before that character's door will open 
 - Both players must reach their respective doors to complete a level
 - **Cooperate!** Some puzzles require both players working together
 
 ## 🏗️ Features
 
 - 5 hand-crafted levels with progressive difficulty
+- Gem-locked doors: doors stay shut until every matching gem is collected
 - Physics engine with gravity, friction, and collision
 - Moving platforms that carry players
 - Pressure buttons & gates requiring cooperation
@@ -30,6 +32,12 @@ A cooperative two-player platformer inspired by the classic Fireboy and Watergir
 - Animated liquid hazards (lava, water, poison)
 - Squash & stretch character animations
 - No dependencies — pure HTML5/CSS/JS
+
+## Physics and Controls
+- Physics enge with gravity and collision resolution
+- Responsive, smooth movement
+- Jump detection preventing double-jump bugs
+- Smooth acceleration and deceleration 
 
 ## 🚀 Deploy
 
@@ -70,6 +78,9 @@ fireboy-watergirl/
 - **Renderer** (`renderer.js`): Canvas 2D drawing with stone textures, animated liquids, character sprites with squash/stretch, particle systems, gem sparkles
 - **Levels** (`levels.js`): 30×20 tile grids with entity placement data
 - **Game** (`game.js`): State machine (title → playing → win/dead), game loop, UI management
+
+
+
 
 ## License
 
