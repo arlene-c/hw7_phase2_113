@@ -1,3 +1,19 @@
+PHASE 2 PROMPT LOG (relevant prompts)
+
+I was given someone elses fireboy and watergirl game and I want to enhance it. First, can you make the movements of the characters smoother and work as intended (right now, it jumps twice when I'm still trying to move forward making it difficult and nearly impossible to get to the correct doors)
+
+Can you also make the background more visually appealing and "game like." Document the main changes made to this code but make sure to not completely override/erase the initial code -- I simply want to enhance and advance it
+
+Given my partner's original code, do you notice any other bugs or incomplete sections?
+
+Given a short time frame, what are other advancements you think could lead to the most impactful changes to the project?
+
+Can we start with tackling the win condition and gem requirement? Specifically, can you ensure that the door actually opens when each character gets to it and only advances to the next level when all gems are achieved?
+
+
+
+(BELOW: ORIGINAL DEVELOPER's PROMPT LOG - PHASE 1)
+
 # Prompt Log — Fireboy & Watergirl
 
 ## Prompt 1: "run"
