@@ -1,34 +1,45 @@
 // ── game.js ── Main game loop and state management ──
+//
+// CHANGES FROM ORIGINAL:
+//
+// [CHANGE 1] drawTitleBackground() removed from this file.
+//   It has been moved to renderer.drawTitleBackground() so all canvas
+//   drawing lives in the Renderer class. The call site in render() is
+//   updated accordingly — everything else is unchanged.
+//
+// [CHANGE 2] renderer.time is now incremented in the game loop (render())
+//   rather than inside drawTitleBackground(), so the animation clock
+//   advances correctly in all states.
 
 (function () {
-  const canvas = document.getElementById('gameCanvas');
+  const canvas   = document.getElementById('gameCanvas');
   const renderer = new Renderer(canvas);
-  const input = new InputManager();
+  const input    = new InputManager();
 
-  // UI elements
+  // UI elements (unchanged)
   const titleScreen = document.getElementById('title-screen');
   const levelSelect = document.getElementById('level-select');
-  const hud = document.getElementById('hud');
-  const winScreen = document.getElementById('win-screen');
+  const hud         = document.getElementById('hud');
+  const winScreen   = document.getElementById('win-screen');
   const deathScreen = document.getElementById('death-screen');
-  const fireGemsEl = document.getElementById('fire-gems');
+  const fireGemsEl  = document.getElementById('fire-gems');
   const waterGemsEl = document.getElementById('water-gems');
   const levelNameEl = document.getElementById('level-name');
-  const timerEl = document.getElementById('timer');
+  const timerEl     = document.getElementById('timer');
 
-  let state = 'title'; // title, playing, win, dead
+  let state        = 'title';
   let currentLevel = 0;
   let fireboy, watergirl;
   let gems, doors, buttons, gates, platforms;
   let startTime, elapsedTime;
 
-  // ── Build level select ──
+  // ── Build level select (unchanged) ───────────────────────────────────────
   const levelGrid = document.getElementById('level-grid');
   LEVELS.forEach((lvl, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'level-btn';
+    const btn       = document.createElement('button');
+    btn.className   = 'level-btn';
     btn.textContent = i + 1;
-    btn.title = lvl.name;
+    btn.title       = lvl.name;
     btn.addEventListener('click', () => {
       currentLevel = i;
       startLevel(i);
@@ -36,7 +47,7 @@
     levelGrid.appendChild(btn);
   });
 
-  // ── Button handlers ──
+  // ── Button handlers (unchanged) ──────────────────────────────────────────
   document.getElementById('startBtn').addEventListener('click', () => {
     currentLevel = 0;
     startLevel(0);
@@ -74,10 +85,10 @@
     deathScreen.classList.add('hidden');
   }
 
+  // ── startLevel (unchanged) ────────────────────────────────────────────────
   function startLevel(idx) {
     const lvl = LEVELS[idx];
 
-    // Hide all UI, show HUD
     titleScreen.classList.add('hidden');
     levelSelect.classList.add('hidden');
     winScreen.classList.add('hidden');
@@ -86,89 +97,76 @@
 
     levelNameEl.textContent = lvl.name;
 
-    // Create players
-    fireboy = new Player(lvl.fireStart.x, lvl.fireStart.y, 'fire');
+    fireboy   = new Player(lvl.fireStart.x,  lvl.fireStart.y,  'fire');
     watergirl = new Player(lvl.waterStart.x, lvl.waterStart.y, 'water');
 
-    // Create gems
-    gems = lvl.gems.map(g => new Gem(g.x, g.y, g.type));
-
-    // Create doors
+    gems  = lvl.gems.map(g    => new Gem(g.x, g.y, g.type));
     doors = [
-      new Door(lvl.fireDoor.x, lvl.fireDoor.y, 'fire'),
+      new Door(lvl.fireDoor.x,  lvl.fireDoor.y,  'fire'),
       new Door(lvl.waterDoor.x, lvl.waterDoor.y, 'water'),
     ];
-
-    // Create buttons & gates
-    buttons = (lvl.buttons || []).map(b => new Button(b.x, b.y, b.gateId));
-    gates = (lvl.gates || []).map(g => new Gate(g.x, g.y, g.h, g.gateId));
-
-    // Create platforms
+    buttons   = (lvl.buttons   || []).map(b => new Button(b.x, b.y, b.gateId));
+    gates     = (lvl.gates     || []).map(g => new Gate(g.x, g.y, g.h, g.gateId));
     platforms = (lvl.platforms || []).map(p =>
       new MovingPlatform(p.x, p.y, p.w, p.dx, p.dy, p.speed)
     );
 
     startTime = Date.now();
-    state = 'playing';
+    state     = 'playing';
   }
 
-  // ── Game Loop ──
+  // ── update (unchanged) ────────────────────────────────────────────────────
   function update() {
     if (state !== 'playing') return;
 
     const lvl = LEVELS[currentLevel];
 
-    // Update players
     fireboy.update(input, lvl);
     watergirl.update(input, lvl);
 
-    // Platforms
     for (const plat of platforms) {
       plat.update();
       plat.carryPlayer(fireboy);
       plat.carryPlayer(watergirl);
     }
 
-    // Buttons & gates
-    for (const btn of buttons) {
-      btn.checkPress([fireboy, watergirl]);
-    }
-    for (const gate of gates) {
-      gate.update(buttons);
-    }
+    for (const btn of buttons)  btn.checkPress([fireboy, watergirl]);
+    for (const gate of gates)   gate.update(buttons);
 
-    // Gem collection
     for (const gem of gems) {
       gem.update();
       if (gem.collected) continue;
-
-      if (gem.type === 'fire' && overlapsEntity(fireboy, gem)) {
-        gem.collected = true;
-        fireboy.gems++;
-      }
-      if (gem.type === 'water' && overlapsEntity(watergirl, gem)) {
-        gem.collected = true;
-        watergirl.gems++;
-      }
+      if (gem.type === 'fire'  && overlapsEntity(fireboy,   gem)) { gem.collected = true; fireboy.gems++;   }
+      if (gem.type === 'water' && overlapsEntity(watergirl, gem)) { gem.collected = true; watergirl.gems++; }
     }
 
-    // Door check
-    const fireDoor = doors.find(d => d.type === 'fire');
+    const fireDoor  = doors.find(d => d.type === 'fire');
     const waterDoor = doors.find(d => d.type === 'water');
+
+    // [FIX] Count remaining gems of each type every frame.
+    //   A door only unlocks once ALL gems of its matching type are collected.
+    //   open drives both the visual animation (renderer reads openAmount) and
+    //   the win gate below — both must be true before the level can complete.
+    const fireGemsLeft  = gems.filter(g => g.type === 'fire'  && !g.collected).length;
+    const waterGemsLeft = gems.filter(g => g.type === 'water' && !g.collected).length;
+    fireDoor.open  = fireGemsLeft  === 0;
+    waterDoor.open = waterGemsLeft === 0;
+
     fireDoor.update();
     waterDoor.update();
 
-    fireboy.atDoor = overlapsEntity(fireboy, fireDoor);
+    fireboy.atDoor   = overlapsEntity(fireboy,   fireDoor);
     watergirl.atDoor = overlapsEntity(watergirl, waterDoor);
 
-    // Win condition
-    if (fireboy.atDoor && watergirl.atDoor) {
+    // [FIX] Win only fires when BOTH doors are open (gems cleared) AND
+    //   both players are standing inside their matching open door.
+    //   Previously this triggered with no gems collected at all.
+    if (fireDoor.open && waterDoor.open && fireboy.atDoor && watergirl.atDoor) {
       winLevel();
       return;
     }
 
-    // Hazard check
-    const fireHazard = fireboy.checkHazards(lvl);
+    const fireHazard  = fireboy.checkHazards(lvl);
     const waterHazard = watergirl.checkHazards(lvl);
 
     if (fireHazard) {
@@ -184,26 +182,34 @@
       return;
     }
 
-    // Out of bounds
     if (fireboy.y > ROWS * TILE + 50 || watergirl.y > ROWS * TILE + 50) {
       die('A player fell out of the level!');
       return;
     }
 
-    // Timer
     elapsedTime = Date.now() - startTime;
-    const secs = Math.floor(elapsedTime / 1000);
-    const mins = Math.floor(secs / 60);
+    const secs  = Math.floor(elapsedTime / 1000);
+    const mins  = Math.floor(secs / 60);
     timerEl.textContent = `${mins}:${String(secs % 60).padStart(2, '0')}`;
-    fireGemsEl.textContent = fireboy.gems;
-    waterGemsEl.textContent = watergirl.gems;
+
+    // [CHANGED] Show remaining gem count so players know how many are left,
+    //   with a checkmark once a door is unlocked — clearer feedback than
+    //   showing a collected count that players have to compare against a total.
+    fireGemsEl.textContent  = fireGemsLeft  === 0 ? '✓' : fireGemsLeft;
+    waterGemsEl.textContent = waterGemsLeft === 0 ? '✓' : waterGemsLeft;
   }
 
+  // ── render ────────────────────────────────────────────────────────────────
   function render() {
+    // [CHANGED] Increment renderer time here so it advances in ALL states,
+    // not just when drawTitleBackground was called in the original.
+    renderer.time += 0.016;
+
     renderer.clear();
 
+    // [CHANGED] Title/level-select background now delegates to renderer method
     if (state === 'title' || state === 'levelselect') {
-      drawTitleBackground();
+      renderer.drawTitleBackground();
       return;
     }
 
@@ -212,48 +218,17 @@
     renderer.drawBackground();
     renderer.drawTiles(lvl.tiles);
 
-    // Doors (behind players)
-    for (const door of doors) renderer.drawDoor(door);
+    for (const door  of doors)     renderer.drawDoor(door);
+    for (const gate  of gates)     renderer.drawGate(gate);
+    for (const plat  of platforms) renderer.drawPlatform(plat);
+    for (const btn   of buttons)   renderer.drawButton(btn);
+    for (const gem   of gems)      renderer.drawGem(gem);
 
-    // Gates
-    for (const gate of gates) renderer.drawGate(gate);
-
-    // Platforms
-    for (const plat of platforms) renderer.drawPlatform(plat);
-
-    // Buttons
-    for (const btn of buttons) renderer.drawButton(btn);
-
-    // Gems
-    for (const gem of gems) renderer.drawGem(gem);
-
-    // Players
     renderer.drawPlayer(fireboy);
     renderer.drawPlayer(watergirl);
   }
 
-  function drawTitleBackground() {
-    const ctx = renderer.ctx;
-    renderer.clear();
-
-    // Animated embers
-    renderer.time += 0.01;
-    for (let i = 0; i < 30; i++) {
-      const t = renderer.time + i * 0.7;
-      const x = (Math.sin(t * 0.3 + i) * 0.5 + 0.5) * canvas.width;
-      const y = canvas.height - ((t * 30 + i * 50) % canvas.height);
-      const size = Math.sin(t + i) * 1.5 + 2;
-      const alpha = Math.max(0, 1 - y / canvas.height) * 0.4;
-
-      ctx.fillStyle = i % 2 === 0
-        ? `rgba(255,107,43,${alpha})`
-        : `rgba(43,164,255,${alpha})`;
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
+  // ── helpers (unchanged) ───────────────────────────────────────────────────
   function winLevel() {
     state = 'win';
     hud.classList.add('hidden');
@@ -263,7 +238,7 @@
     const mins = Math.floor(secs / 60);
     document.getElementById('win-time').textContent =
       `${mins}:${String(secs % 60).padStart(2, '0')}`;
-    document.getElementById('win-fire').textContent = fireboy.gems;
+    document.getElementById('win-fire').textContent  = fireboy.gems;
     document.getElementById('win-water').textContent = watergirl.gems;
   }
 
@@ -275,18 +250,18 @@
   }
 
   function overlapsEntity(a, b) {
-    return a.left < b.right &&
-           a.right > b.left &&
-           a.top < b.bottom &&
+    return a.left  < b.right  &&
+           a.right > b.left   &&
+           a.top   < b.bottom &&
            a.bottom > b.top;
   }
 
+  // ── game loop (unchanged) ─────────────────────────────────────────────────
   function gameLoop() {
     update();
     render();
     requestAnimationFrame(gameLoop);
   }
 
-  // Start!
   gameLoop();
 })();
