@@ -4,6 +4,15 @@ A cooperative two-player platformer inspired by the classic Fireboy and Watergir
 
 ![Game Preview](https://img.shields.io/badge/Players-2_(Local)-blue) ![Tech](https://img.shields.io/badge/Tech-HTML5_Canvas-orange) ![Build](https://img.shields.io/badge/Build-None_Required-green)
 
+## Notes
+Main Updates/Changes/Notes from Original Code:
+- Original developer used JS/HTML/CSS, so built on those languages instead of translating to other languages
+- Fixed bugs with character movement, velocity, and acceleration
+- Fixed collision detection
+- Changed gem collection ordering
+- Door-open algorithm and visuals when users gather all gems
+- Improved game background appearance 
+
 ## 🎮 How to Play
 
 ### Controls
@@ -78,7 +87,6 @@ fireboy-watergirl/
 - **Renderer** (`renderer.js`): Canvas 2D drawing with stone textures, animated liquids, character sprites with squash/stretch, particle systems, gem sparkles
 - **Levels** (`levels.js`): 30×20 tile grids with entity placement data
 - **Game** (`game.js`): State machine (title → playing → win/dead), game loop, UI management
-
 
 
 
